@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel JDA PRO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.15);
+    --text: #e8ecf4;
+    --muted: #6b7a99;
+    --accent: #3b82f6;
+    --accent-dim: rgba(59,130,246,0.15);
+    --red:    #ef4444; --red-bg:    rgba(239,68,68,0.1);
+    --blue:   #3b82f6; --blue-bg:   rgba(59,130,246,0.1);
+    --green:  #10b981; --green-bg:  rgba(16,185,129,0.1);
+    --amber:  #f59e0b; --amber-bg:  rgba(245,158,11,0.1);
+    --purple: #8b5cf6; --purple-bg: rgba(139,92,246,0.1);
+    --teal:   #14b8a6; --teal-bg:   rgba(20,184,166,0.1);
+    --pink:   #ec4899; --pink-bg:   rgba(236,72,153,0.1);
+    --gray:   #94a3b8; --gray-bg:   rgba(148,163,184,0.1);
+    --cyan:   #22d3ee; --cyan-bg:   rgba(34,211,238,0.1);
+    --lime:   #a3e635; --lime-bg:   rgba(163,230,53,0.1);
+    --orange: #fb923c; --orange-bg: rgba(251,146,60,0.1);
+    --indigo: #6366f1; --indigo-bg: rgba(99,102,241,0.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    position: sticky; top: 0;
+    background: rgba(10,15,26,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.05em; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: white; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .fav-toggle { font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .2s; font-family: 'Syne', sans-serif; font-weight: 500; }
+  .fav-toggle:hover { border-color: var(--amber); color: var(--amber); }
+  .fav-toggle.active { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+  .tool-count { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  .search-wrap { padding: 1.5rem 2rem 0; }
+  .search-box { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; transition: border-color .2s; }
+  .search-box:focus-within { border-color: var(--accent); }
+  .search-box svg { color: var(--muted); flex-shrink: 0; }
+  .search-box input { flex: 1; background: none; border: none; outline: none; font-size: 14px; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+  .search-box input::placeholder { color: var(--muted); }
+  #match-count { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+  .clear-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 2px; display: none; transition: color .2s; }
+  .clear-btn:hover { color: var(--text); }
+  .clear-btn.visible { display: block; }
+
+  .filter-wrap { padding: 1rem 2rem; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+  .filter-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 500; transition: all .15s; display: flex; align-items: center; gap: 5px; }
+  .filter-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .filter-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .grid-wrap { padding: 1.5rem 2rem 3rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .2s; animation: fadeIn .3s ease both; }
+  .cat-card:hover { border-color: var(--border-hover); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .cat-head { padding: 14px 16px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .cat-icon-wrap { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cat-name { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex: 1; }
+  .cat-n { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--muted); background: var(--surface2); padding: 2px 8px; border-radius: 20px; }
+
+  .links-list { padding: 8px; }
+  .link-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: var(--muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; transition: all .15s; }
+  .link-item:hover { background: var(--surface2); color: var(--text); }
+  .link-arrow { margin-left: auto; opacity: 0; transition: opacity .15s; font-size: 11px; }
+  .link-item:hover .link-arrow { opacity: 1; }
+
+  .fav-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 2px 3px; border-radius: 4px; transition: color .15s; flex-shrink: 0; line-height: 1; }
+  .fav-btn:hover { color: var(--amber); }
+  .fav-btn.starred { color: var(--amber); }
+
+  .badge-new { font-size: 10px; padding: 2px 6px; border-radius: 10px; background: rgba(59,130,246,0.2); color: #60a5fa; font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.05em; }
+
+  .links-extra { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
+  .links-extra.expanded { max-height: 1200px; }
+  .toggle-more { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; margin-top: 2px; font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--muted); background: transparent; border: none; border-top: 1px dashed var(--border); cursor: pointer; transition: color .15s, background .15s; border-radius: 6px; }
+  .toggle-more:hover { color: var(--accent); background: var(--surface2); }
+  .toggle-more svg { transition: transform .25s ease; }
+  .toggle-more.expanded svg { transform: rotate(180deg); }
+
+  .empty { display: none; text-align: center; padding: 4rem 2rem; color: var(--muted); font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+  .empty.show { display: block; }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: .4; }
+
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--surface2); border: 1px solid var(--border-hover); color: var(--text); font-size: 13px; font-family: 'JetBrains Mono', monospace; padding: 10px 16px; border-radius: 8px; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    header { padding: 1rem; }
+    .search-wrap, .filter-wrap, .grid-wrap { padding-left: 1rem; padding-right: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .logo span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">JDA</div>
+    <span>KIT TÉCNICO PRO</span>
+  </div>
+  <div class="header-right">
+    <span class="tool-count" id="tool-count"></span>
+    <button class="fav-toggle" id="fav-toggle" onclick="toggleFavMode()">★ Favoritos</button>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="Buscar herramienta..." oninput="filterTools()" />
+    <span id="match-count"></span>
+    <button class="clear-btn" id="clear-btn" onclick="clearSearch()" title="Limpiar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="filter-wrap" id="filter-wrap"></div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">
+    <div class="empty-icon">◎</div>
+    Sin resultados — intenta otra búsqueda
+  </div>
+  <div class="empty" id="empty-fav">
+    <div class="empty-icon">☆</div>
+    No tenés favoritos guardados aún.<br>Hacé clic en la estrella ☆ en cualquier herramienta.
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = [
+  {id:"hacking", label:"Hacking / Pentesting", color:"var(--red)", bg:"var(--red-bg)", dot:"#ef4444",
+   links:[
+    {n:"TryHackMe",u:"https://tryhackme.com/"},
+    {n:"Hack The Box",u:"https://www.hackthebox.com/"},
+    {n:"VulnHub",u:"https://www.vulnhub.com/"},
+    {n:"Vulnyx",u:"https://vulnyx.com/"},
+    {n:"HackMyVM",u:"https://hackmyvm.eu/"},
+    {n:"PentesterLab",u:"https://pentesterlab.com/"},
+    {n:"PortSwigger",u:"https://portswigger.net/"},
+    {n:"RevShells",u:"https://www.revshells.com/"},
+    {n:"GTFOBins",u:"https://gtfobins.github.io/"},
+    {n:"HackTricks",u:"https://book.hacktricks.wiki/en/index.html"},
+    {n:"PentestMonkey",u:"https://github.com/pentestmonkey"},
+    {n:"Exploit-DB",u:"https://www.exploit-db.com/"},
+    {n:"Google Hacking DB",u:"https://www.exploit-db.com/google-hacking-database"},
+    {n:"Shodan",u:"https://www.shodan.io/"},
+    {n:"Censys",u:"https://search.censys.io/"},
+    {n:"CyberDefenders",u:"https://cyberdefenders.org/"},
+    {n:"PicoCTF",u:"https://picoctf.org/"},
+    {n:"OverTheWire",u:"https://overthewire.org/wargames/"},
+    {n:"Wayback Machine",u:"https://web.archive.org/"},
+    {n:"Web Vulnerable",u:"http://testphp.vulnweb.com/login.php"},
+   ]},
+  {id:"osint", label:"OSINT / Investigación", color:"var(--blue)", bg:"var(--blue-bg)", dot:"#3b82f6",
+   links:[
+    {n:"OSINT Framework",u:"https://osintframework.com/"},
+    {n:"OSINT Rocks",u:"https://osint.rocks/"},
+    {n:"WhatsMyName",u:"https://whatsmyname.app/"},
+    {n:"OSINT Combine",u:"https://www.osintcombine.com/"},
+    {n:"IntelX",u:"https://intelx.io/"},
+    {n:"DeHashed",u:"https://dehashed.com/"},
+    {n:"Yandex Images",u:"https://yandex.com/images/"},
+   ]},
+  {id:"analisis", label:"Análisis / Seguridad", color:"var(--green)", bg:"var(--green-bg)", dot:"#10b981",
+   links:[
+    {n:"VirusTotal",u:"https://www.virustotal.com/"},
+    {n:"URLScan",u:"https://urlscan.io/"},
+    {n:"DNSDumpster",u:"https://dnsdumpster.com/"},
+    {n:"Whois",u:"https://whois.domaintools.com/"},
+    {n:"APK Analyzer",u:"https://exodus-privacy.eu.org/en/"},
+    {n:"Blacklight",u:"https://themarkup.org/blacklight"},
+   ]},
+  {id:"forense", label:"Forense / Malware", color:"var(--orange)", bg:"var(--orange-bg)", dot:"#fb923c",
+   links:[
+    {n:"Any.Run",u:"https://any.run/"},
+    {n:"Hybrid Analysis",u:"https://www.hybrid-analysis.com/"},
+    {n:"MalwareBazaar",u:"https://bazaar.abuse.ch/"},
+    {n:"ThreatFox",u:"https://threatfox.abuse.ch/"},
+    {n:"Joe Sandbox",u:"https://www.joesandbox.com/"},
+    {n:"Volatility Foundation",u:"https://www.volatilityfoundation.org/"},
+    {n:"MITRE ATT&CK",u:"https://attack.mitre.org/"},
+   ]},
+  {id:"email", label:"Emails / Phishing", color:"var(--amber)", bg:"var(--amber-bg)", dot:"#f59e0b",
+   links:[
+    {n:"MXToolbox",u:"https://mxtoolbox.com/"},
+    {n:"EmailRep",u:"https://emailrep.io/"},
+    {n:"Hunter",u:"https://hunter.io/"},
+    {n:"Have I Been Pwned",u:"https://haveibeenpwned.com/"},
+    {n:"PhishTank",u:"https://phishtank.org/"},
+   ]},
+  {id:"red", label:"Red / IP", color:"var(--teal)", bg:"var(--teal-bg)", dot:"#14b8a6",
+   links:[
+    {n:"Mi IP",u:"https://whatismyipaddress.com/"},
+    {n:"IP Info",u:"https://ipinfo.io/"},
+    {n:"SpeedTest",u:"https://www.speedtest.net/"},
+   ]},
+  {id:"descargas", label:"Descargas", color:"var(--gray)", bg:"var(--gray-bg)", dot:"#94a3b8",
+   links:[
+    {n:"FRP Android",u:"https://matandroid.com/frp"},
+    {n:"Ninite",u:"https://ninite.com/"},
+    {n:"Windows (UUP Dump)",u:"https://uupdump.net/"},
+    {n:"FilePuma",u:"https://www.filepuma.com/"},
+    {n:"APK Mirror",u:"https://apkmirror.com/"},
+    {n:"WeTransfer",u:"https://wetransfer.com/"},
+   ]},
+  {id:"reparacion", label:"Reparación / Firmware", color:"var(--indigo)", bg:"var(--indigo-bg)", dot:"#6366f1",
+   links:[
+    {n:"SamFw Tools",u:"https://samfw.com/"},
+    {n:"SamMobile",u:"https://www.sammobile.com/"},
+    {n:"XDA Developers",u:"https://xdaforums.com/"},
+    {n:"SP Flash Tool (MediaTek)",u:"https://spflashtool.com/"},
+    {n:"Xiaomi Firmware Updater",u:"https://xiaomifirmwareupdater.com/"},
+    {n:"Mi Flash Tool",u:"https://xiaomiflashtool.com/"},
+    {n:"NeedROM",u:"https://www.needrom.com/"},
+   ]},
+  {id:"privacidad", label:"Privacidad", color:"var(--pink)", bg:"var(--pink-bg)", dot:"#ec4899",
+   links:[
+    {n:"Correo Temporal (Internxt)",u:"https://internxt.com/es"},
+    {n:"SimpleX Chat",u:"https://simplex.chat/es/"},
+    {n:"Password Check",u:"https://password.kaspersky.com/"},
+    {n:"Generador Password",u:"https://bitwarden.com/password-generator/"},
+   ]},
+  {id:"rastreo", label:"Denuncia / Ayuda", color:"var(--green)", bg:"var(--green-bg)", dot:"#10b981",
+   links:[
+    {n:"Grabify",u:"https://grabify.link/?hl=es-US"},
+    {n:"IP Logger",u:"https://iplogger.org/es/?hl=es-US"},
+    {n:"Eliminar fotos de menores (NCMEC)",u:"https://takeitdown.ncmec.org/es/"},
+    {n:"Eliminar fotos íntimas (adultos)",u:"https://stopncii.org/"},
+    {n:"INHOPE - Red mundial de líneas de denuncia",u:"https://www.inhope.org/"},
+    {n:"Internet Watch Foundation",u:"https://www.iwf.org.uk/"},
+   ]},
+  {id:"ciberataques", label:"Ciberataques en vivo", color:"var(--red)", bg:"var(--red-bg)", dot:"#ef4444",
+   links:[
+    {n:"Threat Intel",u:"https://start.me/p/wMrA5z/cyber-threat-intelligence"},
+    {n:"Cisco Talos",u:"https://talosintelligence.com/"},
+    {n:"Kaspersky Map",u:"https://cybermap.kaspersky.com/country/NL"},
+   ]},
+  {id:"buscadores", label:"Buscadores / Ayuda", color:"var(--cyan)", bg:"var(--cyan-bg)", dot:"#22d3ee",
+   links:[
+    {n:"DuckDuckGo",u:"https://duckduckgo.com/"},
+    {n:"Startpage",u:"https://www.startpage.com/"},
+    {n:"NVD (CVE oficial)",u:"https://nvd.nist.gov/"},
+    {n:"CVE Details",u:"https://www.cvedetails.com/"},
+    {n:"Stack Overflow",u:"https://stackoverflow.com/"},
+    {n:"Server Fault",u:"https://serverfault.com/"},
+    {n:"Reddit r/netsec",u:"https://www.reddit.com/r/netsec/"},
+    {n:"Reddit r/cybersecurity",u:"https://www.reddit.com/r/cybersecurity/"},
+   ]},
+  {id:"cursos", label:"Cursos / Formación", color:"var(--lime)", bg:"var(--lime-bg)", dot:"#a3e635",
+   links:[
+    {n:"Cybrary",u:"https://www.cybrary.it/"},
+    {n:"Professor Messer",u:"https://www.professormesser.com/"},
+    {n:"INE Security",u:"https://ine.com/learning/areas/security"},
+    {n:"OWASP",u:"https://owasp.org/"},
+    {n:"freeCodeCamp",u:"https://www.freecodecamp.org/"},
+    {n:"Coursera",u:"https://www.coursera.org/"},
+    {n:"SANS Cyber Aces",u:"https://www.sans.org/cyberaces/"},
+   ]},
+  {id:"programacion", label:"Programación / Recursos", color:"var(--purple)", bg:"var(--purple-bg)", dot:"#8b5cf6",
+   links:[
+    {n:"GitHub",u:"https://github.com/"},
+    {n:"GitHub Gist",u:"https://gist.github.com/"},
+    {n:"MDN Web Docs",u:"https://developer.mozilla.org/es/"},
+    {n:"DevDocs",u:"https://devdocs.io/"},
+    {n:"Regex101",u:"https://regex101.com/"},
+    {n:"CyberChef",u:"https://gchq.github.io/CyberChef/"},
+    {n:"Replit",u:"https://replit.com/"},
+    {n:"CodePen",u:"https://codepen.io/"},
+    {n:"npm",u:"https://www.npmjs.com/"},
+    {n:"PyPI",u:"https://pypi.org/"},
+   ]},
+  {id:"ia", label:"Inteligencia Artificial", color:"var(--purple)", bg:"var(--purple-bg)", dot:"#8b5cf6",
+   links:[
+    {n:"ChatGPT",u:"https://chat.openai.com/", badge:"NEW"},
+    {n:"Google Gemini",u:"https://gemini.google.com/"},
+    {n:"Microsoft Copilot",u:"https://copilot.microsoft.com/"},
+    {n:"Claude (Anthropic)",u:"https://claude.ai/"},
+    {n:"GLM-5.2",u:"https://chat.z.ai/"},
+    {n:"Kimi",u:"https://www.kimi.com/"},
+    {n:"DeepSeek",u:"https://www.deepseek.com/en/"},
+    {n:"Qwen3.7-Plus",u:"https://chat.qwen.ai/"},
+    {n:"Minimax",u:"https://www.minimax.io/"},
+    {n:"Grok",u:"https://grok.com/"},
+    {n:"Leonardo",u:"https://app.leonardo.ai/"},
+    {n:"Perplexity",u:"https://www.perplexity.ai/"},
+   ]},
+  {id:"recursos", label:"Recursos / Assets", color:"var(--gray)", bg:"var(--gray-bg)", dot:"#94a3b8",
+   links:[
+    {n:"PNG Images",u:"https://pngimg.com/"},
+   ]},
+];
+
+const FILTERS = [
+  {id:"all",label:"Todas"},
+  {id:"hacking",label:"Hacking"},
+  {id:"osint",label:"OSINT"},
+  {id:"analisis",label:"Análisis"},
+  {id:"forense",label:"Forense"},
+  {id:"email",label:"Email"},
+  {id:"red",label:"Red"},
+  {id:"reparacion",label:"Reparación"},
+  {id:"privacidad",label:"Privacidad"},
+  {id:"rastreo",label:"Denuncia"},
+  {id:"buscadores",label:"Buscadores"},
+  {id:"cursos",label:"Cursos"},
+  {id:"programacion",label:"Programación"},
+  {id:"ia",label:"IA"},
+];
+
+let activeFilter = "all";
+let favMode = false;
+let favorites = JSON.parse(localStorage.getItem("jda_favorites") || "[]");
+let expandedCats = new Set();
+const COLLAPSE_THRESHOLD = 6;
+
+function toggleCat(catId, btn) {
+  if(expandedCats.has(catId)) expandedCats.delete(catId);
+  else expandedCats.add(catId);
+  const expanded = expandedCats.has(catId);
+  const extra = btn.parentElement.querySelector(".links-extra");
+  extra.classList.toggle("expanded", expanded);
+  btn.classList.toggle("expanded", expanded);
+  const hiddenCount = extra.children.length;
+  btn.querySelector(".toggle-label").textContent = expanded ? "Ver menos" : `Ver ${hiddenCount} más`;
+}
+
+function saveFavs() { localStorage.setItem("jda_favorites", JSON.stringify(favorites)); }
+function isFav(key) { return favorites.includes(key); }
+
+function toggleFav(key, btn) {
+  if(isFav(key)) {
+    favorites = favorites.filter(f => f !== key);
+    btn.textContent = "☆"; btn.classList.remove("starred");
+    showToast("Eliminado de favoritos");
+  } else {
+    favorites.push(key);
+    btn.textContent = "★"; btn.classList.add("starred");
+    showToast("Guardado en favoritos");
+  }
+  saveFavs();
+  if(favMode) filterTools();
+}
+
+function toggleFavMode() {
+  favMode = !favMode;
+  document.getElementById("fav-toggle").classList.toggle("active", favMode);
+  filterTools();
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+function clearSearch() {
+  document.getElementById("search").value = "";
+  document.getElementById("clear-btn").classList.remove("visible");
+  filterTools();
+}
+
+function buildFilters() {
+  const wrap = document.getElementById("filter-wrap");
+  FILTERS.forEach(f => {
+    const cat = DATA.find(d => d.id === f.id);
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (f.id === "all" ? " active" : "");
+    btn.dataset.id = f.id;
+    if(cat) btn.innerHTML = `<span class="filter-dot" style="background:${cat.dot}"></span>${f.label}`;
+    else btn.textContent = f.label;
+    btn.onclick = () => {
+      activeFilter = f.id;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filterTools();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function filterTools() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  const emptyFav = document.getElementById("empty-fav");
+  const clearBtn = document.getElementById("clear-btn");
+  const matchEl = document.getElementById("match-count");
+
+  clearBtn.classList.toggle("visible", q.length > 0);
+  grid.innerHTML = "";
+  empty.classList.remove("show");
+  emptyFav.classList.remove("show");
+
+  let total = 0;
+
+  DATA.forEach(cat => {
+    if(activeFilter !== "all" && cat.id !== activeFilter) return;
+    let links = cat.links;
+    if(q) links = links.filter(l => l.n.toLowerCase().includes(q));
+    if(favMode) links = links.filter(l => isFav(cat.id + ":" + l.n));
+    if(links.length === 0) return;
+    total += links.length;
+
+    const canCollapse = !q && !favMode && links.length > COLLAPSE_THRESHOLD;
+    const half = Math.ceil(links.length / 2);
+    const visible = canCollapse ? links.slice(0, half) : links;
+    const hidden = canCollapse ? links.slice(half) : [];
+    const isExpanded = expandedCats.has(cat.id);
+
+    const renderLink = l => {
+      const key = cat.id + ":" + l.n;
+      const starred = isFav(key);
+      return `<a class="link-item" href="${l.u}" target="_blank" rel="noopener noreferrer">
+        <button class="fav-btn ${starred ? "starred" : ""}" title="Favorito" onclick="event.preventDefault();toggleFav('${key}',this)">${starred ? "★" : "☆"}</button>
+        ${l.n}${l.badge ? `<span class="badge-new">${l.badge}</span>` : ""}
+        <span class="link-arrow">→</span>
+      </a>`;
+    };
+
+    const card = document.createElement("div");
+    card.className = "cat-card";
+    card.innerHTML = `
+      <div class="cat-head">
+        <div class="cat-icon-wrap" style="background:${cat.bg}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${cat.color}" stroke-width="2.5">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/>
+          </svg>
+        </div>
+        <span class="cat-name" style="color:${cat.color}">${cat.label}</span>
+        <span class="cat-n">${links.length}</span>
+      </div>
+      <div class="links-list">
+        ${visible.map(renderLink).join("")}
+        ${canCollapse ? `
+          <div class="links-extra${isExpanded ? " expanded" : ""}">
+            ${hidden.map(renderLink).join("")}
+          </div>
+          <button class="toggle-more${isExpanded ? " expanded" : ""}" onclick="toggleCat('${cat.id}',this)">
+            <span class="toggle-label">${isExpanded ? "Ver menos" : `Ver ${hidden.length} más`}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        ` : ""}
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  const hasFilter = q || activeFilter !== "all" || favMode;
+  if(total === 0 && favMode) emptyFav.classList.add("show");
+  else if(total === 0 && hasFilter) empty.classList.add("show");
+  matchEl.textContent = hasFilter && total > 0 ? `${total} herramientas` : "";
+  const allTotal = DATA.reduce((s,c) => s + c.links.length, 0);
+  document.getElementById("tool-count").textContent = `${allTotal} herramientas`;
+}
+
+buildFilters();
+filterTools();
+</script>
+</body>
+</html>
